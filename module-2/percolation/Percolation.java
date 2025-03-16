@@ -26,6 +26,10 @@ public class Percolation {
 
     // traverse the nodes until we find the root node
     private int getUnionNodeRoot(int nodeid) {
+        if (union.find(nodeid) == nodeid) {
+            return nodeid;
+        }
+        
         int outnode = nodeid;
         while (true) {
             int parent = union.find(outnode);
@@ -41,7 +45,7 @@ public class Percolation {
 
     
     private int toLinear(int row, int col) {
-        return (col * size ) + row;
+        return (row * size ) + col;
     }
 
     private RowCol fromLinear(int position) {
@@ -87,54 +91,52 @@ public class Percolation {
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
-        int x = row;
-        int y= col;
-
-        if (x >= size || y >= size) {
+        if (row >= size || col >= size) {
             throw new IllegalArgumentException("Open was given a row or column value that was out of bounds col:"+col+ " row:"+ row);
         }
 
-        if (isOpen(x, y)) {
+        if (isOpen(row, col)) {
             return;
         }
 
 
-        int new_node = toLinear(x, y);
+        int new_node = toLinear(row, col);
 
         // point each open neighbout to it
         // todo: check if neighour is open first
         int neighbour_x = 0; 
         int neighbour_y = 0;
+
         // left 
-        neighbour_x = x - 1;
-        neighbour_y = y;
+        neighbour_x = col - 1;
+        neighbour_y = row;
         if (neighbour_x > 0 && !isOpen(neighbour_x, neighbour_y)) {
             int pos = toLinear(neighbour_x, neighbour_y);
-            union.union(new_node, pos);
+            union.union(pos, new_node);
         }
 
         // right
-        neighbour_x = x +1;
-        neighbour_y = y;
+        neighbour_x = col + 1;
+        neighbour_y = row;
         if (neighbour_x < size && !isOpen(neighbour_x, neighbour_y)) {
             int pos = toLinear(neighbour_x, neighbour_y);
-            union.union(new_node, pos);
+            union.union(pos, new_node);
         }
 
         // up
-        neighbour_x = x;
-        neighbour_y = y -1;
+        neighbour_x = col;
+        neighbour_y = row -1;
         if (neighbour_y >= 0 && !isOpen(neighbour_x, neighbour_y)) {
             int pos = toLinear(neighbour_x, neighbour_y);
-            union.union(new_node, pos);
+            union.union(pos, new_node);
         }
 
         // down
-        neighbour_x = x;
-        neighbour_y = y +1;
+        neighbour_x = col;
+        neighbour_y = row +1;
         if (neighbour_y < size && !isOpen(neighbour_x, neighbour_y)) {
             int pos = toLinear(neighbour_x, neighbour_y);
-            union.union(new_node, pos);
+            union.union(pos, new_node);
         }
 
         // record that site has been opened
@@ -182,7 +184,8 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates() {
-        return union.find(bottomSite) == topSite;
+        return getUnionNodeRoot(bottomSite) == topSite;
+            
     }
 
     private static void printSystem(Percolation percolation, int size) {
@@ -206,20 +209,22 @@ public class Percolation {
         for (int y = 0; y < size; y++) {
             int x = 0;
 
-            percolation.open(y, x);
-            if (!percolation.isOpen(y, x)) {
+            percolation.open(x, y);
+            if (!percolation.isOpen(x, y)) {
                 throw new Exception("Site " + x + "," + y + " did not open");
             }
-            if (!percolation.isFull(y, x)) {
+            if (!percolation.isFull(x, y)) {
                 throw new Exception("Site " + x + "," + y + " did not full");
             }
+
             if ( y+1 < size && percolation.isFull(x, y+1)) {
                 throw new Exception("Site " + x + "," + y + " leaked bellow");
             }
 
-            System.out.println("Site opened" + y+ ","+ x);
+            System.out.println("Site opened" + x+ ","+ y);
         }
         if (!percolation.percolates()) {
+            printSystem(percolation, size);
             throw new Exception("The system did no percolate");
         }
     }
@@ -230,11 +235,11 @@ public class Percolation {
         Percolation percolation = new Percolation(size);
         for (int y = 0; y < size-1; y++) {
             int x = 0;
-            percolation.open(y, x);
+            percolation.open(x, y);
         }
         if (percolation.percolates()) {
             printSystem(percolation, size);
-            throw new Exception("system should not percolate.");
+            throw new Exception("system should not percolate");
         }
         if (percolation.isFull(size-1, 0)) {
             throw new Exception("An un-opened node should not be full");
@@ -242,10 +247,10 @@ public class Percolation {
         
         for (int x = 1; x < size; x++) {
             for (int y = 0; y < size; y++) {
-                if (percolation.isOpen(y, x)) {
+                if (percolation.isOpen(x, y)) {
                     throw new Exception("node should not be open " + x + " " + y);
                 }
-                if (percolation.isFull(y, x)) {
+                if (percolation.isFull(x, y)) {
                     throw new Exception("node should not be full" + x + " " + y);
                 }
             }
@@ -256,6 +261,21 @@ public class Percolation {
 
     // test client (optional)
     public static void main(String[] args) throws Exception {
+        Percolation percolation = new Percolation(2);
+        if (percolation.percolates()) {
+            throw new Exception("Percolated on start");
+        }
+        // percolation.open(0, 0);
+        // if (percolation.percolates()) {
+        //     throw new Exception("Percolated after start");
+        // }
+
+        // percolation.open(0, 1);
+        // if (!percolation.percolates()) {
+        //     throw new Exception("Should percolate");
+        // }
+
+
         test1();
         test2();
 
