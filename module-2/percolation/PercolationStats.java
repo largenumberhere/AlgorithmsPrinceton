@@ -5,28 +5,29 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class PercolationStats {
 
-    // perform independent trials on an n-by-n grid
-    public PercolationStats(int n, int trials) {
-        Percolation percolation;
-        
-        for (int i = 0; i < trials; i++) {
-            percolation = new Percolation(n);
-            while (true) {
-                if (percolation.percolates()) {
-                    break;
-                }
-
-                int random_col = StdRandom.uniformInt(0, n);
-                int random_row = StdRandom.uniformInt(0, n);
-
-                if (!percolation.isOpen(random_row, random_col)) {
-                    percolation.open(random_row, random_col);
-                }
-                
+// perform independent trials on an n-by-n grid
+public PercolationStats(int n, int trials) {
+    Percolation percolation;
+    
+    for (int i = 0; i < trials; i++) {
+        percolation = new Percolation(n);
+        while (true) {
+            if (percolation.percolates()) {
+                break;
             }
-        }
 
+            int random_col = StdRandom.uniformInt(0, n);
+            int random_row = StdRandom.uniformInt(0, n);
+
+            if (!percolation.isOpen(random_row, random_col)) {
+                percolation.open(random_row, random_col);
+            }
+            
+        }
     }
+
+}
+
 
     // sample mean of percolation threshold
     public double mean() {
