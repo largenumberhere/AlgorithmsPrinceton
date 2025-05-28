@@ -188,16 +188,49 @@ public class Percolation {
             
     }
 
-    private static void printSystem(Percolation percolation, int size) {
+    private void printSystem() {
         for (int x = 0; x < size; x ++) {
             for (int y = 0; y < size; y++) {
-                if (percolation.isOpen(x, y)) {
+                if (isOpen(x, y)) {
                     System.out.print("O");
                 } else {
                     System.out.print("X");
                 }
             }
             System.out.println();
+        }
+
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                int thisNode = union.find(toLinear(x , y));
+                // left
+                if (x - 1 > 0) {
+                    if (thisNode == union.find(toLinear(x-1, y))) {
+                        System.out.println("" + x + "," + y + " -> " + (x-1) + "," + y);
+                    }
+                }
+                
+                // right
+                if (x + 1 < size) {
+                    if (thisNode == union.find(toLinear(x+1, y))) {
+                        System.out.println("" + x + "," + y + " -> "+ (x+1) + "," + y);
+                    }
+                }
+
+                // up
+                if (y - 1 > 0) {
+                    if (thisNode == union.find(toLinear(x, y-1))) {
+                        System.out.println("" + x + "," + y + " -> " + x+ "," + (y -1));
+                    }
+                }
+
+                // down
+                if (y + 1 < size) {
+                    if (thisNode == union.find(toLinear(x, y+1))) {
+                        System.out.println("" + x + "," + y + " -> " + x+ "," + (y + 1));
+                    }
+                }
+            }
         }
     }
 
@@ -224,7 +257,8 @@ public class Percolation {
             System.out.println("Site opened" + x+ ","+ y);
         }
         if (!percolation.percolates()) {
-            printSystem(percolation, size);
+            percolation.printSystem(); //
+            percolation.printSystem(); //printSystem(percolation, size);
             throw new Exception("The system did no percolate");
         }
     }
@@ -238,7 +272,7 @@ public class Percolation {
             percolation.open(x, y);
         }
         if (percolation.percolates()) {
-            printSystem(percolation, size);
+            percolation.printSystem(); // (percolation, size);
             throw new Exception("system should not percolate");
         }
         if (percolation.isFull(size-1, 0)) {
@@ -256,7 +290,7 @@ public class Percolation {
             }
         }
         
-        printSystem(percolation, size);
+        percolation.printSystem(); // (percolation, size);
     }
 
     // test client (optional)
