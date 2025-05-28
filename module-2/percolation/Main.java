@@ -1,6 +1,7 @@
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
+
 public class Main {
     public static void main(String[] args) throws Exception {
         System.out.println("Percolation test");
