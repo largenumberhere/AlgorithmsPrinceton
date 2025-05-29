@@ -10,21 +10,19 @@ public class Percolation {
     private int size;
     private int head;
     private int tail;
+    private boolean[] openSites;
 
     // creates n-by-n grid, with all sites initially blocked
     public Percolation(int n) {
         this.union = new WeightedQuickUnionUF(n*n + 2);
         this.size = n;
 
-        this.head = n;
-        this.tail = n+1;
-        // join the top and bottom to 2 virtual nodes
-        for (int i = 0; i < size; i++) {
-            Position p1 = Position.createFromRowCol(0, i, size);
-            union.union(head, p1.toOffset());
+        this.head = (n*n);
+        this.tail = (n*n)+1;
 
-            Position p2 = Position.createFromRowCol(size-1, i, size);
-            union.union(tail, p2.toOffset());
+        openSites = new boolean[n * n];
+        for (int i = 0; i < n*n; i++) {
+            openSites[i] = false;
         }
     }
 
@@ -33,65 +31,56 @@ public class Percolation {
     public void open(int row, int col) {
         // join to each of its neighbours
         Position position = Position.createFromRowCol(row, col, size);
-        // System.out.println("position r:" + position.getRow() + " c:" + position.getCol() + " hasDown: " + position.hasDown());
-        // System.out.println("position r:" + position.getRow() + " c:" + position.getCol() + " hasUp: " + position.hasUp());
-        // System.out.println("position r:" + position.getRow() + " c:" + position.getCol() + " hasLeft: " + position.hasLeft());
-        // System.out.println("position r:" + position.getRow() + " c:" + position.getCol() + " hasRight: " + position.hasRight());
-        
-        
-        
+
         int offset = position.toOffset();
+        openSites[offset] = true;
         if (position.hasUp()) {
-            union.union(offset, position.getUp().toOffset());
+            int side = position.getUp().toOffset();
+            if (openSites[side]) {
+                union.union(offset, side);
+            }
         } 
         if (position.hasDown()) {
-            union.union(offset, position.getDown().toOffset());
+            int side = position.getDown().toOffset();
+            if (openSites[side]) {
+                union.union(offset, side);
+            }
         }
         if (position.hasLeft()) {
-            union.union(offset, position.getLeft().toOffset());
+            int side = position.getLeft().toOffset();
+            if (openSites[side]) {
+                union.union(offset, side);
+            }
         } 
         if (position.hasRight()) {
-            union.union(offset, position.getRight().toOffset());
+            int side = position.getRight().toOffset();
+            if (openSites[side]) {
+                union.union(offset, side);
+            }
+        }
+
+        if (!position.hasDown()) {
+            // System.out.println("joined to tail at r:" + row + ", c:" + col);
+            union.union(offset, tail);
+        }
+        if (!position.hasUp()) {
+            // System.out.println("joined to head at r:" + row + ", c:" + col);
+            union.union(offset, head);
         }
     }
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
-        Position position = Position.createFromRowCol(row, col, size);
-        int root = union.find(position.toOffset());
-        if (position.hasUp()) {
-            if (union.find(position.getUp().toOffset()) != root) {
-                // System.out.println("no up");
-                return false;
-            }
-        }
-
-        if (position.hasDown()) {
-            if (union.find(position.getDown().toOffset())!= root) {
-                // System.out.println("no dn");
-                return false;
-            }
-        }
-
-        if (position.hasLeft()) {
-            if (union.find(position.getLeft().toOffset())!= root) {
-                // System.out.println("no lf");
-                return false;
-            }
-        }
-
-        if (position.hasRight()) {
-            if (union.find(position.getRight().toOffset()) != root) {
-                // System.out.println("no rt");
-                return false;
-            }
-        }
-
-        return true;
+        int offset = Position.createFromRowCol(row, col, size).toOffset();
+        return openSites[offset];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
+        if (!isOpen(row, col)) {
+            return false;
+        }
+
         Position p1 = Position.createFromRowCol(row, col, size);
         if (union.find(p1.toOffset()) == union.find(head)) {
             return true;
@@ -102,7 +91,13 @@ public class Percolation {
 
     // returns the number of open sites
     public int numberOfOpenSites() {
-        return -1;
+        int tally = 0;
+        for (int i = 0; i < openSites.length; i++) {
+            if (openSites[i]) {
+                tally +=1;
+            }
+        }
+        return tally;
     }
 
     // does the system percolate?
@@ -121,6 +116,11 @@ public class Percolation {
             }
             System.out.println("");
         }
+
+        
+        System.out.println("sets count:" + (union.count()-2));
+        System.out.println("grid size:" + size * size);
+         
     }
 
     // test client (optional)
@@ -128,17 +128,53 @@ public class Percolation {
         int size = 5;
         Percolation percolation = new Percolation(size);
         percolation.open(0,0);
-        percolation.print();
-        System.out.println("");
-        
-        percolation.open(1,1);
-        percolation.print();
+        percolation.open(1,0);
+        percolation.open(2,0);
+        percolation.open(3,0);
+        if (percolation.percolates()) {
+            percolation.print();
+            throw new RuntimeException("should not percolate!");
+        }
+        percolation.open(4,0);
+        if (!percolation.percolates()) {
+            percolation.print();
+            throw new RuntimeException("should percolate!");
+        }
 
-        System.out.println("");
-        percolation.open(2,2);
+        System.out.println("test 1 passed");
 
-        percolation.print();
+
+        size = 3;
+        percolation = new Percolation(size);
+        percolation.open(0, 0);
+        percolation.open(1, 0);
+        percolation.open(1, 1);
+        if (percolation.percolates()) {
+            percolation.print();
+            throw new RuntimeException("should not percolate!");
+        }
+        percolation.open(2,1);
         
+        if (!percolation.percolates()) {
+            percolation.print();
+            throw new RuntimeException("should percolate!");
+        }
+        
+        size = 5;
+        percolation = new Percolation(size);
+        percolation.open(0,4);
+        percolation.open(1,4);
+        percolation.open(2,4);
+        percolation.open(3,4);
+        if (percolation.percolates()) {
+            percolation.print();
+            throw new RuntimeException("should not percolate!");
+        }
+        percolation.open(4,4);
+        if (!percolation.percolates()) {
+            percolation.print();
+            throw new RuntimeException("should percolate!");
+        }
     }
 
 }
