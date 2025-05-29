@@ -3,6 +3,8 @@ import edu.princeton.cs.algs4.StdStats;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 import java.lang.Throwable;
+import java.lang.IndexOutOfBoundsException;
+
 
 
 public class Percolation {
@@ -14,6 +16,10 @@ public class Percolation {
 
     // creates n-by-n grid, with all sites initially blocked
     public Percolation(int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("n must be at least 1");
+        }
+
         this.union = new WeightedQuickUnionUF(n*n + 2);
         this.size = n;
 
@@ -29,6 +35,10 @@ public class Percolation {
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
+        // account for 1-based indexing
+        row -=1;
+        col -=1;
+
         // join to each of its neighbours
         Position position = Position.createFromRowCol(row, col, size);
 
@@ -71,12 +81,20 @@ public class Percolation {
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
+        // account for 1-based indexing
+        row -=1;
+        col -=1;
+
         int offset = Position.createFromRowCol(row, col, size).toOffset();
         return openSites[offset];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
+        // account for 1-based indexing
+        row -=1;
+        col -=1;
+
         if (!isOpen(row, col)) {
             return false;
         }
@@ -105,76 +123,162 @@ public class Percolation {
         return union.find(head) == union.find(tail);
     }
 
-    private void print() {
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                if (isOpen(y, x)) {
-                    System.out.print("O");                    
-                } else {
-                    System.out.print(".");
-                }
-            }
-            System.out.println("");
-        }
+    // private void print() {
+    //     for (int y = 0; y < size; y++) {
+    //         for (int x = 0; x < size; x++) {
+    //             if (isOpen(y, x)) {
+    //                 System.out.print("O");                    
+    //             } else {
+    //                 System.out.print(".");
+    //             }
+    //         }
+    //         System.out.println("");
+    //     }
 
         
-        System.out.println("sets count:" + (union.count()-2));
-        System.out.println("grid size:" + size * size);
+    //     System.out.println("sets count:" + (union.count()-2));
+    //     System.out.println("grid size:" + size * size);
          
-    }
+    // }
 
     // test client (optional)
-    public static void main(String[] args) {
-        int size = 5;
-        Percolation percolation = new Percolation(size);
-        percolation.open(0,0);
-        percolation.open(1,0);
-        percolation.open(2,0);
-        percolation.open(3,0);
-        if (percolation.percolates()) {
-            percolation.print();
-            throw new RuntimeException("should not percolate!");
-        }
-        percolation.open(4,0);
-        if (!percolation.percolates()) {
-            percolation.print();
-            throw new RuntimeException("should percolate!");
-        }
+    public static void main(String[] args) { 
+    //     int size = 5;
+    //     Percolation percolation = new Percolation(size);
+    //     percolation.open(0,0);
+    //     percolation.open(1,0);
+    //     percolation.open(2,0);
+    //     percolation.open(3,0);
+    //     if (percolation.percolates()) {
+    //         percolation.print();
+    //         throw new RuntimeException("should not percolate!");
+    //     }
+    //     percolation.open(4,0);
+    //     if (!percolation.percolates()) {
+    //         percolation.print();
+    //         throw new RuntimeException("should percolate!");
+    //     }
 
-        System.out.println("test 1 passed");
+    //     System.out.println("test 1 passed");
 
 
-        size = 3;
-        percolation = new Percolation(size);
-        percolation.open(0, 0);
-        percolation.open(1, 0);
-        percolation.open(1, 1);
-        if (percolation.percolates()) {
-            percolation.print();
-            throw new RuntimeException("should not percolate!");
-        }
-        percolation.open(2,1);
+    //     size = 3;
+    //     percolation = new Percolation(size);
+    //     percolation.open(0, 0);
+    //     percolation.open(1, 0);
+    //     percolation.open(1, 1);
+    //     if (percolation.percolates()) {
+    //         percolation.print();
+    //         throw new RuntimeException("should not percolate!");
+    //     }
+    //     percolation.open(2,1);
         
-        if (!percolation.percolates()) {
-            percolation.print();
-            throw new RuntimeException("should percolate!");
-        }
+    //     if (!percolation.percolates()) {
+    //         percolation.print();
+    //         throw new RuntimeException("should percolate!");
+    //     }
         
-        size = 5;
-        percolation = new Percolation(size);
-        percolation.open(0,4);
-        percolation.open(1,4);
-        percolation.open(2,4);
-        percolation.open(3,4);
-        if (percolation.percolates()) {
-            percolation.print();
-            throw new RuntimeException("should not percolate!");
-        }
-        percolation.open(4,4);
-        if (!percolation.percolates()) {
-            percolation.print();
-            throw new RuntimeException("should percolate!");
-        }
+    //     size = 5;
+    //     percolation = new Percolation(size);
+    //     percolation.open(0,4);
+    //     percolation.open(1,4);
+    //     percolation.open(2,4);
+    //     percolation.open(3,4);
+    //     if (percolation.percolates()) {
+    //         percolation.print();
+    //         throw new RuntimeException("should not percolate!");
+    //     }
+    //     percolation.open(4,4);
+    //     if (!percolation.percolates()) {
+    //         percolation.print();
+    //         throw new RuntimeException("should percolate!");
+    //     }
     }
 
+}
+
+
+
+class Position {
+    public int row;
+    private int col;
+    private int size;
+
+    public int getCol() {
+        return this.col;
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+    public int getRow() {
+        return this.row;
+    }
+
+    private Position(int row, int col, int columns) {
+        this.row = row;
+        this.col = col;
+        size = columns;
+    }
+
+    public static Position createFromRowCol(int row, int col, int columns) {
+        if (row >= columns || col >= columns || row < 0 || col < 0) {
+            throw new IndexOutOfBoundsException("Attempt to create an invalid position");
+        }
+
+        Position position = new Position(row, col, columns);
+        return position;
+    }   
+    public static Position createFromOffset(int offset, int size) {
+        int col = offset % size;
+        int row = offset / size;
+        Position position = new Position(row, col, size);
+
+        return position;
+    }
+    public int toOffset() {
+        int offset = (row * size) + col;
+        return offset;
+    }
+
+    public boolean hasLeft() {
+        return (col -1) >= 0;
+    }
+    public Position getLeft() {
+        if (!hasLeft()) {
+            throw new IndexOutOfBoundsException("there is none to the left");
+        }
+
+        return new Position(row, col-1, size);
+    }
+    public boolean hasRight() {
+        return (col + 1) < size;
+    }
+    public Position getRight() {
+        if (!hasRight()) {
+            throw new IndexOutOfBoundsException("there is none to the right");
+        } 
+
+        return new Position(row, col +1, size);
+    }
+    public boolean hasUp() {
+        return (row -1) >= 0;
+    }
+    public Position getUp() {
+        if (!hasUp()) {
+            throw new IndexOutOfBoundsException("there is none upwards");
+        }
+
+        return new Position(row-1, col, size);
+    }
+    public boolean hasDown() {
+        return (row +1) < size;
+    }
+    public Position getDown() {
+        if (!hasDown()) {
+            throw new IndexOutOfBoundsException("there is no downwards");
+        }
+
+        return new Position(row+1, col, size);
+    }
 }
