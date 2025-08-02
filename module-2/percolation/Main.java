@@ -6,7 +6,12 @@ public class Main {
     public static void main(String[] args) throws Exception {
         System.out.println("Percolation test");
 
-        Percolation.main(new String[] {"", ""});
+        PercolationStats stats = new PercolationStats(200, 100);
+        
+        // stats.print();
+        
+
+        // Percolation.main(new String[] {"", ""});
         // WeightedQuickUnionUF union = new WeightedQuickUnionUF(4);
         // union.union(0,1);
         // union.union(1,2);

@@ -40,7 +40,10 @@ public class Percolation {
         col -=1;
 
         // join to each of its neighbours
-        Position position = Position.createFromRowCol(row, col, size);
+        Position position = Position.tryCreateFromRowCol(row, col, size);
+        if (position == null) {
+            throw new IllegalArgumentException("Illegal bounds r=" + row + " c=" + col + " size=" + size);
+        }
 
         int offset = position.toOffset();
         openSites[offset] = true;
@@ -85,7 +88,12 @@ public class Percolation {
         row -=1;
         col -=1;
 
-        int offset = Position.createFromRowCol(row, col, size).toOffset();
+        Position p = Position.tryCreateFromRowCol(row, col, size);
+        if (p == null) {
+            throw new IllegalArgumentException("Illegal bounds r=" + row + " c=" + col + " size=" + size);
+        }
+        int offset = p.toOffset();
+
         return openSites[offset];
     }
 
@@ -99,7 +107,10 @@ public class Percolation {
             return false;
         }
 
-        Position p1 = Position.createFromRowCol(row, col, size);
+        Position p1 = Position.tryCreateFromRowCol(row, col, size);
+        if (p1 == null) {
+            throw new IllegalArgumentException("Illegal bounds r=" + row + " c=" + col + " size=" + size);
+        }
         if (union.find(p1.toOffset()) == union.find(head)) {
             return true;
         }
@@ -218,10 +229,11 @@ class Position {
     private Position(int row, int col, int columns) {
         this.row = row;
         this.col = col;
-        size = columns;
+        this.size = columns;
     }
 
-    public static Position createFromRowCol(int row, int col, int columns) {
+    private static Position createFromRowCol(int row, int col, int columns) {
+        // System.out.println("creating position for row "+ row + " col" + col + "columns" + columns);
         if (row >= columns || col >= columns || row < 0 || col < 0) {
             throw new IndexOutOfBoundsException("Attempt to create an invalid position");
         }
@@ -229,22 +241,47 @@ class Position {
         Position position = new Position(row, col, columns);
         return position;
     }   
+
+    public static Position tryCreateFromRowCol(int row, int col, int columns) {
+        Position p = null;
+        try {
+            p = createFromRowCol(row, col, columns);
+        } catch(IndexOutOfBoundsException e) {}
+        
+        return p;
+    }
+
     public static Position createFromOffset(int offset, int size) {
         int col = offset % size;
         int row = offset / size;
         Position position = new Position(row, col, size);
 
+
         return position;
     }
+
+    public static Position tryCreateFromOffset(int offset, int size) {
+        Position p = null;
+        try {
+            p = createFromOffset(offset, size);
+        } catch (IndexOutOfBoundsException e) {}
+
+        return p;
+    }
+
     public int toOffset() {
         int offset = (row * size) + col;
         return offset;
     }
 
     public boolean hasLeft() {
+        if (size == 0) {
+            throw new IndexOutOfBoundsException("bad size");
+        }
         return (col -1) >= 0;
     }
     public Position getLeft() {
+        
         if (!hasLeft()) {
             throw new IndexOutOfBoundsException("there is none to the left");
         }
@@ -252,6 +289,9 @@ class Position {
         return new Position(row, col-1, size);
     }
     public boolean hasRight() {
+        if (size == 0) {
+            throw new IndexOutOfBoundsException("bad size");
+        }
         return (col + 1) < size;
     }
     public Position getRight() {
@@ -262,6 +302,9 @@ class Position {
         return new Position(row, col +1, size);
     }
     public boolean hasUp() {
+        if (size == 0) {
+            throw new IndexOutOfBoundsException("bad size");
+        }
         return (row -1) >= 0;
     }
     public Position getUp() {
@@ -272,6 +315,9 @@ class Position {
         return new Position(row-1, col, size);
     }
     public boolean hasDown() {
+        if (size == 0) {
+            throw new IndexOutOfBoundsException("bad size");
+        }
         return (row +1) < size;
     }
     public Position getDown() {
