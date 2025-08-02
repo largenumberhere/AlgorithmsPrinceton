@@ -8,7 +8,9 @@ public class Main {
 
         PercolationStats stats = new PercolationStats(200, 100);
         
-        // stats.print();
+        System.out.println("mean = " + stats.mean());
+        System.out.println("stddev =" + stats.stddev());
+        System.out.println("95% confidence interval = [" + stats.confidenceLo()+", " + stats.confidenceHi() + "]");
         
 
         // Percolation.main(new String[] {"", ""});
