@@ -80,7 +80,7 @@ public class PercolationStats {
             }
         }
 
-        double m =  mean();
+        double m = mean();
         double deviation = stddev();
         double confidenceLevel = 0.96;
         double tmp = confidenceLevel * deviation / Math.sqrt(counts.length);
@@ -98,7 +98,7 @@ public class PercolationStats {
             }
         }
 
-        double m =  mean();
+        double m = mean();
         double deviation = stddev();
         double confidenceLevel = 0.96;
         double tmp = confidenceLevel * deviation / Math.sqrt(counts.length);

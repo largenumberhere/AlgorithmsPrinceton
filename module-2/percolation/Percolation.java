@@ -9,9 +9,9 @@ import java.lang.IndexOutOfBoundsException;
 
 public class Percolation {
     private WeightedQuickUnionUF union;
-    private int size;
-    private int head;
-    private int tail;
+    private int size;   // the count of rows, or count of coluns. Both should be the same
+    private int head;   // offset of the head node
+    private int tail;   // offsset of the tail node
     private boolean[] openSites;
 
     // creates n-by-n grid, with all sites initially blocked
@@ -35,85 +35,88 @@ public class Percolation {
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
-        // account for 1-based indexing
-        row -=1;
-        col -=1;
+        row = oneToZeroOffset(row);
+        col = oneToZeroOffset(col);
 
         // join to each of its neighbours
-        Position position = Position.tryCreateFromRowCol(row, col, size);
-        if (position == null) {
-            throw new IllegalArgumentException("Illegal bounds r=" + row + " c=" + col + " size=" + size);
+        int offset = rowColToOffset(row, col);
+        if (offset == -1) {
+            throw new IllegalArgumentException("Illegal bounds r=" + row + " c=" + col + " size=" + size); 
         }
 
-        int offset = position.toOffset();
         openSites[offset] = true;
-        if (position.hasUp()) {
-            int side = position.getUp().toOffset();
-            if (openSites[side]) {
-                union.union(offset, side);
+
+        int upRow = row - 1;
+        int upCol = col;
+        if (boundsCheck(upRow, upCol)) {
+            int sideOffset = rowColToOffset(upRow, upCol);
+            if (openSites[sideOffset]) {
+                union.union(offset, sideOffset);
             }
-        } 
-        if (position.hasDown()) {
-            int side = position.getDown().toOffset();
-            if (openSites[side]) {
-                union.union(offset, side);
-            }
-        }
-        if (position.hasLeft()) {
-            int side = position.getLeft().toOffset();
-            if (openSites[side]) {
-                union.union(offset, side);
-            }
-        } 
-        if (position.hasRight()) {
-            int side = position.getRight().toOffset();
-            if (openSites[side]) {
-                union.union(offset, side);
-            }
+        } else {
+            union.union(offset, head);
         }
 
-        if (!position.hasDown()) {
-            // System.out.println("joined to tail at r:" + row + ", c:" + col);
+        int downRow = row + 1;
+        int donwCol = col;
+        if (boundsCheck(downRow, donwCol)) {
+            int sideOffset = rowColToOffset(downRow, donwCol);
+            if (openSites[sideOffset]) {
+                union.union(offset, sideOffset);
+            }
+        } else {
             union.union(offset, tail);
         }
-        if (!position.hasUp()) {
-            // System.out.println("joined to head at r:" + row + ", c:" + col);
-            union.union(offset, head);
+
+        int leftRow = row;
+        int leftCol = col - 1;
+        if (boundsCheck(leftRow, leftCol)) {
+            int sideOffset = rowColToOffset(leftRow, leftCol);
+            if (openSites[sideOffset]) {
+                union.union(offset, sideOffset);
+            }
+        }
+        
+        int rightRow = row;
+        int rightCol = col + 1;
+        if (boundsCheck(rightRow, rightCol)) {
+            int sideOffset = rowColToOffset(rightRow, rightCol);
+            if (openSites[sideOffset]) {
+                union.union(offset, sideOffset);
+            }
         }
     }
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
         // account for 1-based indexing
-        row -=1;
-        col -=1;
+        row = oneToZeroOffset(row);
+        col = oneToZeroOffset(col);
 
-        Position p = Position.tryCreateFromRowCol(row, col, size);
-        if (p == null) {
+        int offset = rowColToOffset(row, col);
+        if (offset == -1) {
             throw new IllegalArgumentException("Illegal bounds r=" + row + " c=" + col + " size=" + size);
         }
-        int offset = p.toOffset();
 
         return openSites[offset];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
-        // account for 1-based indexing
-        row -=1;
-        col -=1;
+        row = oneToZeroOffset(row);
+        col = oneToZeroOffset(col);
 
-        if (!isOpen(row, col)) {
+        if (!isOpen(zeroToOneOffset(row), zeroToOneOffset(col))) {
             return false;
         }
-
-        Position p1 = Position.tryCreateFromRowCol(row, col, size);
-        if (p1 == null) {
+        
+        int offset = rowColToOffset(row, col);
+        if (offset == -1) {
             throw new IllegalArgumentException("Illegal bounds r=" + row + " c=" + col + " size=" + size);
         }
-        if (union.find(p1.toOffset()) == union.find(head)) {
+        if (union.find(offset) == union.find(head)) {
             return true;
-        }
+        } 
 
         return false;
     }
@@ -123,7 +126,7 @@ public class Percolation {
         int tally = 0;
         for (int i = 0; i < openSites.length; i++) {
             if (openSites[i]) {
-                tally +=1;
+                tally += 1;
             }
         }
         return tally;
@@ -134,197 +137,52 @@ public class Percolation {
         return union.find(head) == union.find(tail);
     }
 
-    // private void print() {
-    //     for (int y = 0; y < size; y++) {
-    //         for (int x = 0; x < size; x++) {
-    //             if (isOpen(y, x)) {
-    //                 System.out.print("O");                    
-    //             } else {
-    //                 System.out.print(".");
-    //             }
-    //         }
-    //         System.out.println("");
-    //     }
-
-        
-    //     System.out.println("sets count:" + (union.count()-2));
-    //     System.out.println("grid size:" + size * size);
-         
-    // }
-
     // test client (optional)
-    public static void main(String[] args) { 
-    //     int size = 5;
-    //     Percolation percolation = new Percolation(size);
-    //     percolation.open(0,0);
-    //     percolation.open(1,0);
-    //     percolation.open(2,0);
-    //     percolation.open(3,0);
-    //     if (percolation.percolates()) {
-    //         percolation.print();
-    //         throw new RuntimeException("should not percolate!");
-    //     }
-    //     percolation.open(4,0);
-    //     if (!percolation.percolates()) {
-    //         percolation.print();
-    //         throw new RuntimeException("should percolate!");
-    //     }
+    public static void main(String[] args) {}
 
-    //     System.out.println("test 1 passed");
-
-
-    //     size = 3;
-    //     percolation = new Percolation(size);
-    //     percolation.open(0, 0);
-    //     percolation.open(1, 0);
-    //     percolation.open(1, 1);
-    //     if (percolation.percolates()) {
-    //         percolation.print();
-    //         throw new RuntimeException("should not percolate!");
-    //     }
-    //     percolation.open(2,1);
-        
-    //     if (!percolation.percolates()) {
-    //         percolation.print();
-    //         throw new RuntimeException("should percolate!");
-    //     }
-        
-    //     size = 5;
-    //     percolation = new Percolation(size);
-    //     percolation.open(0,4);
-    //     percolation.open(1,4);
-    //     percolation.open(2,4);
-    //     percolation.open(3,4);
-    //     if (percolation.percolates()) {
-    //         percolation.print();
-    //         throw new RuntimeException("should not percolate!");
-    //     }
-    //     percolation.open(4,4);
-    //     if (!percolation.percolates()) {
-    //         percolation.print();
-    //         throw new RuntimeException("should percolate!");
-    //     }
+    private int oneToZeroOffset(int offset) {
+        return offset - 1;
+    }
+    private int zeroToOneOffset(int offset){
+        return offset + 1;
     }
 
-}
-
-
-
-class Position {
-    public int row;
-    private int col;
-    private int size;
-
-    public int getCol() {
-        return this.col;
-    }
-
-    public int getSize() {
-        return this.size;
-    }
-    public int getRow() {
-        return this.row;
-    }
-
-    private Position(int row, int col, int columns) {
-        this.row = row;
-        this.col = col;
-        this.size = columns;
-    }
-
-    private static Position createFromRowCol(int row, int col, int columns) {
-        // System.out.println("creating position for row "+ row + " col" + col + "columns" + columns);
-        if (row >= columns || col >= columns || row < 0 || col < 0) {
-            throw new IndexOutOfBoundsException("Attempt to create an invalid position");
+    // int[]? {row, col}
+    // works on 0-indexed values
+    private int[] offsetToPos(int offset) {
+        if (offset < 0 || offset >= size) {
+            return null;    
         }
 
-        Position position = new Position(row, col, columns);
-        return position;
-    }   
-
-    public static Position tryCreateFromRowCol(int row, int col, int columns) {
-        Position p = null;
-        try {
-            p = createFromRowCol(row, col, columns);
-        } catch(IndexOutOfBoundsException e) {}
-        
-        return p;
-    }
-
-    public static Position createFromOffset(int offset, int size) {
         int col = offset % size;
         int row = offset / size;
-        Position position = new Position(row, col, size);
-
-
-        return position;
-    }
-
-    public static Position tryCreateFromOffset(int offset, int size) {
-        Position p = null;
-        try {
-            p = createFromOffset(offset, size);
-        } catch (IndexOutOfBoundsException e) {}
-
-        return p;
-    }
-
-    public int toOffset() {
-        int offset = (row * size) + col;
-        return offset;
-    }
-
-    public boolean hasLeft() {
-        if (size == 0) {
-            throw new IndexOutOfBoundsException("bad size");
+        if (!boundsCheck(row, col)) {
+            return null;
         }
-        return (col -1) >= 0;
+
+        return new int[] {row, col};     
     }
-    public Position getLeft() {
+
+    // works on 0-indexed values
+    // returns -1 on error
+    private int rowColToOffset(int row, int col) {
+        if (!boundsCheck(row, col)) {
+            return -1;
+        }
         
-        if (!hasLeft()) {
-            throw new IndexOutOfBoundsException("there is none to the left");
+        int offset = (row * size) + col;
+        return offset;  
+    }
+
+    // works on 0-indexed values
+    private boolean boundsCheck(int row, int col) {
+        if (row >= size || col >= size || row <0 || col <0) {
+            return false;
         }
 
-        return new Position(row, col-1, size);
+        return true;
     }
-    public boolean hasRight() {
-        if (size == 0) {
-            throw new IndexOutOfBoundsException("bad size");
-        }
-        return (col + 1) < size;
-    }
-    public Position getRight() {
-        if (!hasRight()) {
-            throw new IndexOutOfBoundsException("there is none to the right");
-        } 
 
-        return new Position(row, col +1, size);
-    }
-    public boolean hasUp() {
-        if (size == 0) {
-            throw new IndexOutOfBoundsException("bad size");
-        }
-        return (row -1) >= 0;
-    }
-    public Position getUp() {
-        if (!hasUp()) {
-            throw new IndexOutOfBoundsException("there is none upwards");
-        }
-
-        return new Position(row-1, col, size);
-    }
-    public boolean hasDown() {
-        if (size == 0) {
-            throw new IndexOutOfBoundsException("bad size");
-        }
-        return (row +1) < size;
-    }
-    public Position getDown() {
-        if (!hasDown()) {
-            throw new IndexOutOfBoundsException("there is no downwards");
-        }
-
-        return new Position(row+1, col, size);
-    }
 }
+
+
