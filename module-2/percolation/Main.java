@@ -1,6 +1,4 @@
-
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
-
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -12,7 +10,7 @@ public class Main {
         System.out.println("stddev =" + stats.stddev());
         System.out.println("95% confidence interval = [" + stats.confidenceLo()+", " + stats.confidenceHi() + "]");
         
-    
+
 
 
         // Percolation.main(new String[] {"", ""});

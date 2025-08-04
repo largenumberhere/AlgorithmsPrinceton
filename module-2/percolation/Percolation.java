@@ -1,18 +1,17 @@
-import edu.princeton.cs.algs4.StdRandom;
-import edu.princeton.cs.algs4.StdStats;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
-
-import java.lang.Throwable;
-import java.lang.IndexOutOfBoundsException;
-
-
 
 public class Percolation {
     private WeightedQuickUnionUF union;
     private int size;   // the count of rows, or count of coluns. Both should be the same
-    private int head;   // offset of the head node
-    private int tail;   // offsset of the tail node
+    private int head;   // offset of the top virtual node
+    private int tail;   // offsset of the bottom virtual node
     private boolean[] openSites;
+    private int openSitesCount;
+
+    // test client (optional)
+    public static void main(String[] args) {
+
+    }
 
     // creates n-by-n grid, with all sites initially blocked
     public Percolation(int n) {
@@ -24,12 +23,14 @@ public class Percolation {
         this.size = n;
 
         this.head = (n*n);
-        this.tail = (n*n)+1;
+        this.tail = (n*n) + 1;
 
         openSites = new boolean[n * n];
         for (int i = 0; i < n*n; i++) {
             openSites[i] = false;
         }
+
+        openSitesCount = 0;
     }
 
 
@@ -38,14 +39,27 @@ public class Percolation {
         row = oneToZeroOffset(row);
         col = oneToZeroOffset(col);
 
-        // join to each of its neighbours
         int offset = rowColToOffset(row, col);
         if (offset == -1) {
             throw new IllegalArgumentException("Illegal bounds r=" + row + " c=" + col + " size=" + size); 
         }
 
-        openSites[offset] = true;
+        if (union.find(head) == tail) {
+            if (!openSites[offset]) {
+                openSitesCount++;
+                openSites[offset] = true;
+            }
+            
+            // prevent backwash.
+            return;
+        }
 
+        // join to each of its neighbours
+        if (!openSites[offset]) {
+            openSitesCount++;
+            openSites[offset] = true;
+        }
+        
         int upRow = row - 1;
         int upCol = col;
         if (boundsCheck(upRow, upCol)) {
@@ -53,7 +67,8 @@ public class Percolation {
             if (openSites[sideOffset]) {
                 union.union(offset, sideOffset);
             }
-        } else {
+        } 
+        else {
             union.union(offset, head);
         }
 
@@ -64,7 +79,8 @@ public class Percolation {
             if (openSites[sideOffset]) {
                 union.union(offset, sideOffset);
             }
-        } else {
+        } 
+        else {
             union.union(offset, tail);
         }
 
@@ -123,13 +139,7 @@ public class Percolation {
 
     // returns the number of open sites
     public int numberOfOpenSites() {
-        int tally = 0;
-        for (int i = 0; i < openSites.length; i++) {
-            if (openSites[i]) {
-                tally += 1;
-            }
-        }
-        return tally;
+        return openSitesCount;
     }
 
     // does the system percolate?
@@ -137,30 +147,11 @@ public class Percolation {
         return union.find(head) == union.find(tail);
     }
 
-    // test client (optional)
-    public static void main(String[] args) {}
-
     private int oneToZeroOffset(int offset) {
         return offset - 1;
     }
     private int zeroToOneOffset(int offset){
         return offset + 1;
-    }
-
-    // int[]? {row, col}
-    // works on 0-indexed values
-    private int[] offsetToPos(int offset) {
-        if (offset < 0 || offset >= size) {
-            return null;    
-        }
-
-        int col = offset % size;
-        int row = offset / size;
-        if (!boundsCheck(row, col)) {
-            return null;
-        }
-
-        return new int[] {row, col};     
     }
 
     // works on 0-indexed values
@@ -176,7 +167,7 @@ public class Percolation {
 
     // works on 0-indexed values
     private boolean boundsCheck(int row, int col) {
-        if (row >= size || col >= size || row <0 || col <0) {
+        if (row >= size || col >= size || row < 0 || col < 0) {
             return false;
         }
 
