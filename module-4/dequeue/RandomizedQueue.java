@@ -20,10 +20,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     // remove and return a random item
-    public Item dequeue() {return null;}
+    public Item dequeue() {
+        return null;
+    }
 
     // return a random item (but do not remove it)
-    public Item sample() {return null;}
+    public Item sample() {
+        return null;
+    }
 
     // return an independent iterator over items in random order
     public Iterator<Item> iterator() {
