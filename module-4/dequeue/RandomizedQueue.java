@@ -1,26 +1,22 @@
 import java.util.Iterator;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
-    private Deque<Item> queue;
-
     // construct an empty randomized queue
     public RandomizedQueue() {
-        Deque<Item> queue = new Deque<Item>();
     }
 
     // is the randomized queue empty?
     public boolean isEmpty() {
-        return queue.isEmpty();
+        return false;
     }
 
     // return the number of items on the randomized queue
     public int size() {
-        return queue.size();
+        return -1;
     }
 
     // add the item
     public void enqueue(Item item) {
-        
     }
 
     // remove and return a random item
@@ -49,7 +45,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     // unit testing (required)
     public static void main(String[] args) {
-
+        
     }
 
 }

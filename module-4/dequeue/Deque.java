@@ -47,8 +47,6 @@ public class Deque<Item> implements Iterable<Item> {
             throw new IllegalArgumentException("object cannot be null");
         }
 
-
-
         Node newNode = new Node<Item>(item);
 
         if (head == null) {
@@ -142,11 +140,6 @@ public class Deque<Item> implements Iterable<Item> {
             this.value = value;
             this.next = null;
             this.prev = null;
-        }
-        private Node(Node<Item> node) {
-            this.next = node.next;
-            this.prev = node.prev;
-            this.value = node.value;
         }
     }
 
